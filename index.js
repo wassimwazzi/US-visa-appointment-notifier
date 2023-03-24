@@ -3,7 +3,7 @@ const {parseISO, compareAsc, isBefore, format} = require('date-fns')
 require('dotenv').config();
 
 const {delay, sendSlackMessage, logStep} = require('./utils');
-const {siteInfo, loginCred, IS_PROD, NEXT_SCHEDULE_POLL, MAX_NUMBER_OF_POLL, NOTIFY_ON_DATE_BEFORE} = require('./config');
+const {siteInfo, loginCred, IS_PROD, NEXT_SCHEDULE_POLL, MAX_NUMBER_OF_POLL, NOTIFY_ON_DATE_BEFORE, LOCATION_MAP} = require('./config');
 
 let isLoggedIn = false;
 let maxTries = MAX_NUMBER_OF_POLL
@@ -29,18 +29,18 @@ const login = async (page) => {
   return true;
 }
 
-const notifyMe = async (earliestDate) => {
+const notifyMe = async (earliestDate, locId) => {
   const formattedDate = format(earliestDate, 'dd-MM-yyyy');
   logStep(`sending an email to schedule for ${formattedDate}`);
   await sendSlackMessage({
     subject: `We found an earlier date ${formattedDate}`,
-    text: `Hurry and schedule for ${formattedDate} before it is taken.`
+    text: `Hurry and schedule for ${formattedDate} in ${LOCATION_MAP[locId]} before it is taken.`
   })
 }
 
-const checkForSchedules = async (page) => {
+const checkForSchedules = async (page, url) => {
   logStep('checking for schedules');
-  await page.goto(siteInfo.APPOINTMENTS_JSON_URL);
+  await page.goto(url);
 
   const originalPageContent = await page.content();
   const bodyText = await page.evaluate(() => {
@@ -81,12 +81,13 @@ const process = async (browser) => {
      isLoggedIn = await login(page);
   }
 
-  const earliestDate = await checkForSchedules(page);
-  if(earliestDate && isBefore(earliestDate, parseISO(NOTIFY_ON_DATE_BEFORE))){
-    await notifyMe(earliestDate);
+  for (const url of siteInfo.APPOINTMENTS_JSON_URL) {
+    const earliestDate = await checkForSchedules(page, url);
+    if(earliestDate && isBefore(earliestDate, parseISO(NOTIFY_ON_DATE_BEFORE))){
+      await notifyMe(earliestDate);
+    }
+    await delay(NEXT_SCHEDULE_POLL)
   }
-
-  await delay(NEXT_SCHEDULE_POLL)
 
   await process(browser)
 }

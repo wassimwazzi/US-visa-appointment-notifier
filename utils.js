@@ -36,6 +36,10 @@ const sendSlackMessage = async (params) => {
   }
 };
 
+function apointmentURL(locId) {
+  return `https://ais.usvisa-info.com/${siteInfo.COUNTRY_CODE}/niv/schedule/${siteInfo.SCHEDULE_ID}/appointment/days/${locId}.json?appointments%5Bexpedite%5D=false`
+}
+
 
 const logStep = (stepTitle) => {
   console.log("=====>>> Step:", stepTitle);
