@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const {parseISO, compareAsc, isBefore, format} = require('date-fns')
 require('dotenv').config();
 
-const {delay, sendSlackMessage, logStep} = require('./utils');
+const {delay, sendSlackMessage, logStep, appointmentURL} = require('./utils');
 const {siteInfo, loginCred, IS_PROD, NEXT_SCHEDULE_POLL, MAX_NUMBER_OF_POLL, NOTIFY_ON_DATE_BEFORE, LOCATION_MAP} = require('./config');
 
 let isLoggedIn = false;
@@ -32,6 +32,7 @@ const login = async (page) => {
 const notifyMe = async (earliestDate, locId) => {
   const formattedDate = format(earliestDate, 'dd-MM-yyyy');
   logStep(`sending an email to schedule for ${formattedDate}`);
+  console.log(LOCATION_MAP[locId])
   await sendSlackMessage({
     subject: `We found an earlier date ${formattedDate}`,
     text: `Hurry and schedule for ${formattedDate} in ${LOCATION_MAP[locId]} before it is taken.`
@@ -81,10 +82,10 @@ const process = async (browser) => {
      isLoggedIn = await login(page);
   }
 
-  for (const url of siteInfo.APPOINTMENTS_JSON_URL) {
-    const earliestDate = await checkForSchedules(page, url);
+  for (const locId of siteInfo.FACILITY_IDS) {
+    const earliestDate = await checkForSchedules(page, appointmentURL(locId));
     if(earliestDate && isBefore(earliestDate, parseISO(NOTIFY_ON_DATE_BEFORE))){
-      await notifyMe(earliestDate);
+      await notifyMe(earliestDate, locId);
     }
     await delay(NEXT_SCHEDULE_POLL)
   }

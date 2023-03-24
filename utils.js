@@ -1,10 +1,8 @@
 const config = require('./config');
 const { WebClient } = require('@slack/web-api');
 const slackToken = config.slackToken;
-const formData = require('form-data');
 
-// const mailgun = new Mailgun(formData);
-// const mg = mailgun.client({username: 'api', key: config.mailgun.API_KEY});
+const siteInfo = config.siteInfo;
 
 const debug = async (page, logName, saveScreenShot) => {
   if(saveScreenShot){
@@ -36,7 +34,7 @@ const sendSlackMessage = async (params) => {
   }
 };
 
-function apointmentURL(locId) {
+function appointmentURL(locId) {
   return `https://ais.usvisa-info.com/${siteInfo.COUNTRY_CODE}/niv/schedule/${siteInfo.SCHEDULE_ID}/appointment/days/${locId}.json?appointments%5Bexpedite%5D=false`
 }
 
@@ -49,5 +47,6 @@ module.exports = {
   debug,
   delay,
   sendSlackMessage,
-  logStep
+  logStep,
+  appointmentURL
 }
