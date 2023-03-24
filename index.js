@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const {parseISO, compareAsc, isBefore, format} = require('date-fns')
 require('dotenv').config();
 
-const {delay, sendEmail, logStep} = require('./utils');
+const {delay, sendSlackMessage, logStep} = require('./utils');
 const {siteInfo, loginCred, IS_PROD, NEXT_SCHEDULE_POLL, MAX_NUMBER_OF_POLL, NOTIFY_ON_DATE_BEFORE} = require('./config');
 
 let isLoggedIn = false;
@@ -32,7 +32,7 @@ const login = async (page) => {
 const notifyMe = async (earliestDate) => {
   const formattedDate = format(earliestDate, 'dd-MM-yyyy');
   logStep(`sending an email to schedule for ${formattedDate}`);
-  await sendEmail({
+  await sendSlackMessage({
     subject: `We found an earlier date ${formattedDate}`,
     text: `Hurry and schedule for ${formattedDate} before it is taken.`
   })

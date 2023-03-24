@@ -1,9 +1,10 @@
-const Mailgun = require('mailgun.js');
+const config = require('./config');
+const { WebClient } = require('@slack/web-api');
+const slackToken = config.slackToken;
 const formData = require('form-data');
 
-const mailgun = new Mailgun(formData);
-const config = require('./config');
-const mg = mailgun.client({username: 'api', key: config.mailgun.API_KEY});
+// const mailgun = new Mailgun(formData);
+// const mg = mailgun.client({username: 'api', key: config.mailgun.API_KEY});
 
 const debug = async (page, logName, saveScreenShot) => {
   if(saveScreenShot){
@@ -17,15 +18,24 @@ const debug = async (page, logName, saveScreenShot) => {
 
 const delay = timeout => new Promise(resolve => setTimeout(resolve, timeout));
 
-const sendEmail = async (params) => {
-  const data = {
-    from: 'No reply <noreply@visa-schedule-check>',
-    to: config.NOTIFY_EMAILS,
-    subject: 'Hello US VISA schedules',
-    ...params
+const sendSlackMessage = async (params) => {
+  console.log(slackToken);
+  const web = new WebClient(slackToken);
+  const channel = '#general';
+  const message = {
+    text: params.text,
   };
-  await mg.messages.create(config.mailgun.DOMAIN, data)
+  try {
+    const result = await web.chat.postMessage({
+      text: message.text,
+      channel: channel,
+    });
+    console.log(`Successfully sent message to ${channel}: ${result.message.text}`);
+  } catch (error) {
+    console.error(`Error sending message to ${channel}: ${error}`);
+  }
 };
+
 
 const logStep = (stepTitle) => {
   console.log("=====>>> Step:", stepTitle);
@@ -34,6 +44,6 @@ const logStep = (stepTitle) => {
 module.exports = {
   debug,
   delay,
-  sendEmail,
+  sendSlackMessage,
   logStep
 }
