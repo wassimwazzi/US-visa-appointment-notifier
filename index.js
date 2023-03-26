@@ -95,14 +95,13 @@ const process = async (browser) => {
 
 
 (async () => {
-  const browser = await puppeteer.launch(!IS_PROD ? {headless: false}: undefined);
+  let browser = await puppeteer.launch(!IS_PROD ? {headless: false}: undefined);
 
   try{
     await process(browser);
   }catch(err){
     console.error(err);
     isLoggedIn = false;
-    // log the current time
     console.log(new Date().toISOString());
     await delay(2*NEXT_SCHEDULE_POLL);
     await browser.close();
@@ -110,5 +109,6 @@ const process = async (browser) => {
     await process(browser);
   }
 
+  console.log("Shutting down. Time: ", new Date().toISOString());
   await browser.close();
 })();
