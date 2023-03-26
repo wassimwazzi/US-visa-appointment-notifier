@@ -101,6 +101,13 @@ const process = async (browser) => {
     await process(browser);
   }catch(err){
     console.error(err);
+    isLoggedIn = false;
+    // log the current time
+    console.log(new Date().toISOString());
+    await delay(2*NEXT_SCHEDULE_POLL);
+    await browser.close();
+    browser = await puppeteer.launch(!IS_PROD ? {headless: false}: undefined);
+    await process(browser);
   }
 
   await browser.close();
