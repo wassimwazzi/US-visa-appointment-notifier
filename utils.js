@@ -40,7 +40,7 @@ function appointmentURL(locId) {
 
 
 const logStep = (stepTitle) => {
-  console.log("=====>>> Step:", stepTitle);
+  console.log(new Date().toISOString(), "=====>>> Step:", stepTitle);
 }
 
 module.exports = {

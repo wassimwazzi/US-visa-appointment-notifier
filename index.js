@@ -93,8 +93,7 @@ const process = async (browser) => {
   await process(browser)
 }
 
-
-(async () => {
+const main = async () => {
   let browser = await puppeteer.launch(!IS_PROD ? {headless: false}: undefined);
 
   try{
@@ -102,13 +101,21 @@ const process = async (browser) => {
   }catch(err){
     console.error(err);
     isLoggedIn = false;
-    console.log(new Date().toISOString());
-    await delay(2*NEXT_SCHEDULE_POLL);
-    await browser.close();
-    browser = await puppeteer.launch(!IS_PROD ? {headless: false}: undefined);
-    await process(browser);
   }
-
-  console.log("Shutting down. Time: ", new Date().toISOString());
   await browser.close();
+};
+
+// call main from a try catch block and while loop
+(async () => {
+  while (maxTries > 0) {
+    try {
+      await main();
+    } catch (error) {
+      console.log(error);
+      await delay(2*NEXT_SCHEDULE_POLL);
+    }
+  }
+  console.log("Shutting down. Time: ", new Date().toISOString());
 })();
+
+
