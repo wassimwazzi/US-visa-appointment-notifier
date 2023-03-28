@@ -2,8 +2,9 @@ const puppeteer = require('puppeteer');
 const {parseISO, compareAsc, isBefore, format} = require('date-fns')
 require('dotenv').config();
 
-const {delay, sendSlackMessage, logStep, appointmentURL} = require('./utils');
+const {delay, sendSlackMessage, logStep, appointmentURL, timeOptions} = require('./utils');
 const {siteInfo, loginCred, IS_PROD, NEXT_SCHEDULE_POLL, MAX_NUMBER_OF_POLL, NOTIFY_ON_DATE_BEFORE, LOCATION_MAP} = require('./config');
+const nErrors = 0;
 
 let isLoggedIn = false;
 let maxTries = MAX_NUMBER_OF_POLL
@@ -110,12 +111,15 @@ const main = async () => {
   while (maxTries > 0) {
     try {
       await main();
+      nErrors += 1;
+      await delay(nErrors*NEXT_SCHEDULE_POLL);
     } catch (error) {
       console.log(error);
-      await delay(2*NEXT_SCHEDULE_POLL);
+      nErrors += 1;
+      await delay(nErrors*NEXT_SCHEDULE_POLL);
     }
   }
-  console.log("Shutting down. Time: ", new Date().toISOString());
+  console.log("Shutting down. Time: ", new Date().toLocaleString('en-US', timeOptions));
 })();
 
 

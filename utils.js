@@ -3,6 +3,7 @@ const { WebClient } = require('@slack/web-api');
 const slackToken = config.slackToken;
 
 const siteInfo = config.siteInfo;
+const timeOptions = { timeZone: 'America/New_York' };
 
 const debug = async (page, logName, saveScreenShot) => {
   if(saveScreenShot){
@@ -14,7 +15,10 @@ const debug = async (page, logName, saveScreenShot) => {
   });
 };
 
-const delay = timeout => new Promise(resolve => setTimeout(resolve, timeout));
+const delay = (timeout) => {
+  console.log(`Delaying for ${timeout/1000}s...`);
+  return new Promise((resolve) => setTimeout(resolve, timeout));
+};
 
 const sendSlackMessage = async (params) => {
   console.log(slackToken);
@@ -40,7 +44,7 @@ function appointmentURL(locId) {
 
 
 const logStep = (stepTitle) => {
-  console.log(new Date().toISOString(), "=====>>> Step:", stepTitle);
+  console.log(new Date().toLocaleString('en-US', timeOptions), "=====>>> Step:", stepTitle);
 }
 
 module.exports = {
@@ -48,5 +52,6 @@ module.exports = {
   delay,
   sendSlackMessage,
   logStep,
-  appointmentURL
+  appointmentURL,
+  timeOptions
 }
